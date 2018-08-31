@@ -15,12 +15,8 @@ MyHeaderReader::MyHeaderReader(std::string n, uint64_t length)
     : m_path(n)
 {
     rd.open(n,ios_base::in | ios_base::binary);
-    if (!rd.is_open()) {
-        std::cerr
-        << "Error: could no open file for reading."
-        << std::endl;
-        exit(1);
-    }
+    if (!rd.is_open())
+    throw std::string("error: could no open file for reading.\n");
 
     code_libs   .clear();
     code_exports.clear();
@@ -49,19 +45,9 @@ void MyHeaderReader::read_header()
     rd.read(name,nsize);
     name[nsize] =  '\0';  // string terminator
     
-    std::cout << "magic:   " << std::hex << magic   << std::endl;
-    std::cout << "version: " << std::hex << version << std::endl;
-    
-    std::cout << "nsize:   " << std::dec << nsize   << std::endl;
-    std::cout << "name:    " << name                << std::endl;
-    
     rd >> lib_id ;
     rd >> codebeg;
     rd >> codelen;
-    
-    std::cout << "libid:   0x" << std::hex << lib_id  << std::endl;
-    std::cout << "codebeg: 0x" << std::hex << codebeg << std::endl;
-    std::cout << "codelen: 0x" << std::hex << codelen << std::endl;
 }
 
 // libs
@@ -72,7 +58,6 @@ void MyHeaderReader::read_library()
     uint32_t libs;
 
     rd >> libs;
-    std::cout << "libsr:  " << libs << std::endl;
     
     for (uint32_t i = 0; i < libs; i++) {
         rd >> length;
@@ -86,11 +71,7 @@ void MyHeaderReader::read_library()
             static_cast<uint16_t>(length),
             static_cast<uint16_t>(id),
             std::string(name));
-        
-        std::cout << "nameovl: " << name   << std::endl;
-        std::cout << "length:  " << length << std::endl;
-        std::cout << "ovlid:   " << id     << std::endl;
-        
+
         delete name;
     }
 }
@@ -105,16 +86,12 @@ void MyHeaderReader::read_exports()
     uint8_t  lib_id = 0;
     
     code_exports.clear();
-    
     rd >> funcs;
-    cout << "funclen: " << funcs << std::endl;
 
     for (int i = 0; i < funcs; i++) {
         rd >> length;
         rd >> offset;
         rd >> lib_id;
-
-std::cout << "funzers: " << length << "\n";
 
         char *  name = new char[length];
         rd.read(name,length);
@@ -124,11 +101,7 @@ std::cout << "funzers: " << length << "\n";
         length,
         offset,
         lib_id, name);
-        
-        std::cout << "funname: " << name     <<           std::endl;
-        std::cout << "offset:  " << std::hex << offset << std::endl;
-        std::cout << "id:      " << std::dec << 0 + lib_id << std::endl;
-        
+
         delete name;
     }
 }
@@ -139,9 +112,6 @@ void MyHeaderReader::read_image()
     image = new uint8_t[codelen];
     rd.seekg(codebeg,ios_base::beg);
     rd.read(reinterpret_cast<char*>(image),codelen);
-    
-    std::cout << "codeBEG: " << std::hex << codebeg << std::endl;
-    std::cout << "codeLEN: " << std::hex << codelen << std::endl;
 }
 
 void MyHeaderReader::call(std::string wfun)
@@ -157,16 +127,8 @@ void MyHeaderReader::call(std::string wfun)
         }
     }
     
-    if (!found) {
-        std::cout
-        << "error: could not found entry point."
-        << std::endl;
-        exit(2);
-    }
+    if (!found)
+    throw std::string("error: could not found entry point.\n");
 
-    std::cout << "start...\n";
     vmExec(image,codelen);
-    
-    std::cout << "ferdsch\n";    
-    exit(EXIT_SUCCESS);
 }

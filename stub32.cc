@@ -9,8 +9,6 @@ void testfunc(void)
 }
 int main(int argc, char **argv)
 {
-    std::cout << "coder test ..." << std::endl;
     coder_test(&testfunc);
-    std::cout << "endler" << std::endl;
-    std::exit(EXIT_SUCCESS);
+    return 0;
 }

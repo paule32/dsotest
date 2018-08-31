@@ -14,17 +14,18 @@ static void emitCaller2(X86Emitter * e)
     const auto addr = reinterpret_cast<size_t>  (&my_func2);
     
     e->nop();
-    e->push(x86::ebp);
-    e->mov (x86::ebp, x86::esp);
+    e->push(x86::rbp);
+    e->mov (x86::rbp, x86::rsp);
     
-    //e->mov (x86::rbx, 814);
-    //e->mov (x86::rax, addr);
+    e->mov (x86::rbx, 814);
+    e->mov (x86::rax, addr);
     
-    //e->push(x86::rbx);
-    //e->call(x86::rax);
+    e->push(x86::rbx);
+    e->call(x86::rax);
     
-    e->pop (x86::ebx);
-    e->mov (x86::esp, x86::ebp);
+    e->pop (x86::rbx);
+    
+    e->mov (x86::rsp, x86::rbp);
     
     //e->leave();
     e->ret();
@@ -62,14 +63,10 @@ extern "C" int coder_test(void (*funcer)())
     {
         CodeBuffer & buffer = code.getSectionEntry(0)->getBuffer();
         uint64_t code_len   = buffer.getLength();
-        
-        std::cout << "bufferLen: 0x" << std::hex << code_len << std::endl;
 
         MyHeaderWriter hw("runtime.ovl",code_len,
         buffer.getData());
         hw.write_data();
-        
-        return 0;
     }
     
     {
@@ -77,18 +74,8 @@ extern "C" int coder_test(void (*funcer)())
         MyHeaderReader imgrd(
         roverlay,
         code.getCodeSize());
-
-        std::cout << "len:  " << imgrd.codelen << std::endl;
-        std::cout << "next step..." << std::endl;
         
-        //imgrd.call("main");
-        
-        
-        //typedef void (*testers)();
-        //auto v = reinterpret_cast<testers>(0x400916);
-        //testers v = funcer;
-        //std::printf("%p\n", v);
-        //v();
+        imgrd.call("main");
     }
     return 0;
 }

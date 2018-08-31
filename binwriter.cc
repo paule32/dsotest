@@ -24,20 +24,15 @@ MyHeaderWriter::MyHeaderWriter(
     code_position    = 0;
 
     wr.open(n, ios_base::out | ios_base::binary);
-    if (!wr.is_open()) {
-        std::cerr
-        << "Error: could no open file for writing."
-        << std::endl;
-        exit(1);
-    }
+    if (!wr.is_open())
+    throw std::string("error: could no open file for writing.\n");
 
-    codelen = length;  
-    std::cout << "hdrwrtcodelen: " << codelen << std::endl;
-
+    codelen = length;
+    
     init_header ();
     init_libs   ();
     init_exports();
-    init_image  (reinterpret_cast<char*>(buffer));
+    init_image  (buffer);
 }
 
 MyHeaderWriter::~MyHeaderWriter() { }
@@ -108,18 +103,17 @@ uint64_t MyHeaderWriter::init_exports()
     export_image = new char[exp_length];
     std::memset(export_image, 0, exp_length);
     
-    std::cout << "exporters: 0x" << std::hex << exp_length << std::endl;
-    
     code_position += exp_length;
     return exp_length;
 }
 
-uint64_t MyHeaderWriter::init_image(char *buffer)
+uint64_t MyHeaderWriter::init_image(void * buffer)
 {
     code_image_length = codelen;
     code_image = new char[codelen];
-    std::memcpy(code_image, &buffer, codelen);
-    
+    std::memcpy(code_image, reinterpret_cast<char*>(buffer), codelen);
+
+    code_position += 12;    
     return code_image_length;
 }
 
@@ -158,13 +152,9 @@ void MyHeaderWriter::write_exports()
     uint64_t elen = code_exports.size();
     uint16_t nlen = 0;
     
-    std::cout << "codexp: " << elen << std::endl;
     wr << elen;
-    
     for (int i = 0; i < elen; i++) {
-    std::cout << "expname: " << code_exports.at(i).name << std::endl;
         nlen = code_exports.at(i).name.size();
-    
         wr << nlen;
         
         if (code_exports.at(i).name == "main")
@@ -183,10 +173,6 @@ void MyHeaderWriter::write_exports()
 
 void MyHeaderWriter::write_image()
 {
-    wr.write(reinterpret_cast<const char*>(code_image),codelen);
-
-return;
-
     uint64_t oldpos = wr.tellp();
     wr.seekp(code_position,ios_base::beg);
     
@@ -196,12 +182,6 @@ return;
     // main entry
     wr.seekp(exports_position,ios_base::beg);
     wr << static_cast<uint64_t>(oldpos);
-    
-    std::cout
-    << "oldpos:     0x" << std::hex << oldpos           << std::endl
-    << "entrypoint: 0x" << std::hex << exports_position << std::endl
-    << "codelen:    0x" << std::hex << codelen
-    << std::endl;
     
     wr.seekp(oldpos, ios_base::beg);
     wr.write(reinterpret_cast<const char*>(code_image),codelen);

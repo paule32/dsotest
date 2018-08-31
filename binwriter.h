@@ -38,7 +38,7 @@ public:
     uint64_t init_header  ();
     uint64_t init_libs    ();
     uint64_t init_exports ();
-    uint64_t init_image   (char * buffer);
+    uint64_t init_image   (void * buffer);
     
     void write_image  ();
     void write_exports();

@@ -98,7 +98,7 @@ void MyHeaderReader::read_library()
 // exports
 void MyHeaderReader::read_exports()
 {
-    uint32_t funcs  = 0;
+    uint64_t funcs  = 0;
     
     uint16_t length = 0;
     uint64_t offset = 0;
@@ -113,6 +113,8 @@ void MyHeaderReader::read_exports()
         rd >> length;
         rd >> offset;
         rd >> lib_id;
+
+std::cout << "funzers: " << length << "\n";
 
         char *  name = new char[length];
         rd.read(name,length);

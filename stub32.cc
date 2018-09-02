@@ -1,14 +1,11 @@
-# include <iostream>
-using namespace std;
+#include "binheader.h"
 
-extern "C"  int coder_test(void (*)());
-
-void testfunc(void)
-{
-    std::cout << "meine jütte\n";
-}
 int main(int argc, char **argv)
 {
-    coder_test(&testfunc);
+    std::string   str  = "runtime2.ovl";
+    
+    MyCodeEmitter em(str);  em.write();
+    MyCodeRunner  rc(str);  rc.call ("main");
+    
     return 0;
 }

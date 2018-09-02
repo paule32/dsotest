@@ -11,7 +11,7 @@
 
 using namespace std;
 
-MyHeaderReader::MyHeaderReader(std::string n, uint64_t length)
+MyHeaderReader::MyHeaderReader(std::string n)
     : m_path(n)
 {
     rd.open(n,ios_base::in | ios_base::binary);
@@ -20,8 +20,6 @@ MyHeaderReader::MyHeaderReader(std::string n, uint64_t length)
 
     code_libs   .clear();
     code_exports.clear();
-    
-    codelen = length;
     
     read_header  ();
     read_library ();
@@ -131,4 +129,10 @@ void MyHeaderReader::call(std::string wfun)
     throw std::string("error: could not found entry point.\n");
 
     vmExec(image,codelen);
+}
+
+int MyCodeRunner::call(std::string fun)
+{
+    MyHeaderReader imgrd(lib_name);    
+    imgrd.call(fun);
 }

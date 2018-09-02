@@ -24,7 +24,7 @@ public:
 
 class MyHeaderReader {
 public:
-    MyHeaderReader(std::string n, uint64_t length);
+    MyHeaderReader(std::string n);
 
     uint64_t codebeg = 0;
     uint64_t codelen = 0;
@@ -39,6 +39,13 @@ public:
     
     void call(std::string);
     std::string m_path;
+};
+
+class MyCodeRunner {
+    std::string lib_name;
+public:
+    MyCodeRunner(std::string name): lib_name(name) { }
+    int     call(std::string fun );
 };
 
 #endif

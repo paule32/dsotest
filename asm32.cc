@@ -9,73 +9,51 @@ void my_func2(void) {
     std::printf("Hello World !!!\n");
     std::printf("numser: %d\n", 1212); exit(2150);
 }
-static void emitCaller2(X86Emitter * e)
+
+void MyCodeEmitter::emitTest()
 {
     const auto addr = reinterpret_cast<size_t>  (&my_func2);
     
-    e->nop();
-    e->push(x86::rbp);
-    e->mov (x86::rbp, x86::rsp);
+    x86_emitter->nop();
+    x86_emitter->push(x86::rbp);
+    x86_emitter->mov (x86::rbp, x86::rsp);
     
-    e->mov (x86::rbx, 814);
-    e->mov (x86::rax, addr);
+    x86_emitter->mov (x86::rbx, 814);
+    x86_emitter->mov (x86::rax, addr);
     
-    e->push(x86::rbx);
-    e->call(x86::rax);
+    x86_emitter->push(x86::rbx);
+    x86_emitter->call(x86::rax);
+    x86_emitter->pop (x86::rbx);
     
-    e->pop (x86::rbx);
-    
-    e->mov (x86::rsp, x86::rbp);
-    
-    //e->leave();
-    e->ret();
-    e->nop();
-}
-static void emitCaller(X86Emitter * e)
-{
-    const auto addr = reinterpret_cast<uint64_t>(&my_func2);
-   
-    e->mov (x86::rax, addr);
-    e->call(x86::rax);
-
-    e->leave();
-    e->ret();
+    x86_emitter->mov (x86::rsp, x86::rbp);
+    x86_emitter->ret();
+    x86_emitter->nop();
 }
 
-extern "C" int coder_test(void (*funcer)())
+MyCodeEmitter::MyCodeEmitter(std::string _name)
 {
-    asmjit::JitRuntime rt;
-    asmjit::CodeHolder code;
+    lib_name = _name;
     
     // write code ...
-    {
-        code.init(rt.getCodeInfo());
-        X86Compiler cc(&code);
-        
-        cc.nop();
-        emitCaller2(cc.asEmitter());
-        
-        cc.nop();
-        cc.finalize();
-    }
+    x86_codeholder.init(x86_runtime.getCodeInfo());
+    
+    x86_codeholder.attach(&x86_compiler);
+    x86_emitter = x86_compiler.asEmitter();
+    
+    emitTest();
+}
+
+void MyCodeEmitter::write()
+{
+    x86_compiler.finalize();
 
     // save code ...
-    {
-        CodeBuffer & buffer = code.getSectionEntry(0)->getBuffer();
-        uint64_t code_len   = buffer.getLength();
+    CodeBuffer & buffer = x86_codeholder.getSectionEntry(0)->getBuffer();
+    uint64_t code_len   = buffer.getLength();
 
-        MyHeaderWriter hw("runtime.ovl",code_len,
-        buffer.getData());
-        hw.write_data();
-    }
+    MyHeaderWriter hw(lib_name,code_len,
+    buffer.getData());
+    hw.write_data();
     
-    {
-        const std::string roverlay = "./runtime.ovl";
-        MyHeaderReader imgrd(
-        roverlay,
-        code.getCodeSize());
-        
-        imgrd.call("main");
-    }
-    return 0;
+    x86_codeholder.detach(&x86_compiler);
 }

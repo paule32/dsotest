@@ -23,7 +23,7 @@ libstub32.so: $(CXXOBJECTS) $(COBJECTS)
 	$(CXX) $(CXXFLAGS) -o libstub32.so $(CXXOBJECTS) $(COBJECTS) $(LDLIBS)
 
 test: stub32.cc
-	$(CXX) -ggdb -o test stub32.cc -L. -l stub32
+	$(CXX) -ggdb -o test stub32.cc -L. -l stub32 -lasmjit -lasmtk
 
 depend: .dependxx .depend
 

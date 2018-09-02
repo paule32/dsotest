@@ -16,8 +16,8 @@
 #define EXPORT __attribute__((visibility("default")))
 #define IMPORT
 
-#include "asmjit/asmjit.h"
-#include "asmtk/asmtk.h"
+#include "./asmjit/asmjit.h"
+#include "./asmtk/asmtk.h"
 
 extern "C" void vmExec(uint8_t *img, size_t len);
 
@@ -74,5 +74,20 @@ extern std::vector<dso_export_header> code_exports;
 
 #include "binreader.h"
 #include "binwriter.h"
+
+class MyCodeEmitter {
+    void emitTest();
+    std::string lib_name;
+public:
+    MyCodeEmitter(std::string _name);
+    
+    void write();
+      
+    asmjit::X86Compiler  x86_compiler;
+    asmjit::X86Emitter * x86_emitter ;
+    
+    asmjit::JitRuntime   x86_runtime;
+    asmjit::CodeHolder   x86_codeholder;
+};
 
 #endif
